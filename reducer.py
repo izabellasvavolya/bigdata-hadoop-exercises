@@ -1,16 +1,27 @@
+from itertools import groupby
+from operator import itemgetter
 import sys
-cw=None
-cc=0
-for line in sys.stdin:
-    p=line.strip().split("\t",1)
-    if len(p)!=2: continue
-    w,c=p[0],p[1]
-    try: c=int(c)
-    except: continue
-    if cw==w:
-        cc+=c
-    else:
-        if cw is not None: print(f"{cw}\t{cc}")
-        cw=w
-        cc=c
-if cw is not None: print(f"{cw}\t{cc}")
+
+def read_mapper_output(file, separator='\t'):
+    for line in file:
+        yield line.rstrip().split(separator, 1)
+
+def main(separator='\t'):
+    data = read_mapper_output(sys.stdin, separator)
+    results = []
+
+    for current_word, group in groupby(data, itemgetter(0)):
+        try:
+            total_count = sum(int(count) for current_word, count in group)
+            results.append((current_word, total_count))
+        except ValueError:
+            pass
+
+
+    results.sort(key=lambda x: x[1], reverse=True)
+
+    for word, count in results[:3]:
+        print("%s%s%d" % (word, separator, count))
+
+if __name__ == "__main__":
+    main()
